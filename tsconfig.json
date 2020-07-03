@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "declarationDir": "dist/types",
+    "declaration": true,
+    "types": ["@types/jest", "@types/node"]
+  },
+  "include": ["src", "types"],
+  "exclude": ["node_modules", "src/index.ts"]
+}

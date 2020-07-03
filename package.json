@@ -1,0 +1,69 @@
+{
+  "name": "laya-ui-converter",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [
+    "sync",
+    "aws",
+    "ali"
+  ],
+  "author": "Dean Yao <youmenomi@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Youmenomi/laya-ui-converter"
+  },
+  "bin": {
+    "laya-ui-converter": "./bin/cli.js"
+  },
+  "files": [
+    "dist/**/*",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "test": "jest",
+    "link": "npm link && npm link laya-ui-converter",
+    "unlink": "npm unlink laya-ui-converter && npm unlink",
+    "debug": "node --nolazy --inspect-brk=9229 bin/cli.js",
+    "np": "np --yolo"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/plugin-proposal-decorators": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
+    "@nuxtjs/eslint-config-typescript": "^2.0.0",
+    "@rollup/plugin-babel": "^5.0.4",
+    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "@types/fs-extra": "^9.0.1",
+    "@types/jest": "^26.0.3",
+    "@types/yargs": "^15.0.5",
+    "babel-eslint": "^10.1.0",
+    "babel-jest": "^26.1.0",
+    "eslint": "^7.3.1",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^26.1.0",
+    "np": "^6.2.5",
+    "prettier": "^2.0.5",
+    "rollup": "^2.18.1",
+    "rollup-plugin-filesize": "^9.0.2",
+    "rollup-plugin-terser": "^6.1.0",
+    "ts-jest": "^26.1.1",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "@types/async": "^3.2.3",
+    "async": "^3.2.0",
+    "chalk": "^3.0.0",
+    "cosmiconfig": "^6.0.0",
+    "fs-extra": "^9.0.1",
+    "listr2": "^2.1.9",
+    "replace-string": "^3.1.0",
+    "ts-dedent": "^1.1.1",
+    "yargs": "^15.3.1"
+  }
+}
