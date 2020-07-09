@@ -1,6 +1,6 @@
 {
   "name": "laya-ui-converter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Convert namespace modules to modules in nested folder paths.",
   "keywords": [
     "cli",
