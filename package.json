@@ -20,8 +20,7 @@
     "laya-ui-converter": "./bin/cli.js"
   },
   "files": [
-    "dist/**/*",
-    "LICENSE"
+    "bin"
   ],
   "scripts": {
     "build": "rollup -c",
