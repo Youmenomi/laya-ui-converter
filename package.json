@@ -1,11 +1,14 @@
 {
   "name": "laya-ui-converter",
   "version": "0.0.1",
-  "description": "",
+  "description": "Convert namespace modules to modules in nested folder paths.",
   "keywords": [
-    "sync",
-    "aws",
-    "ali"
+    "cli",
+    "layaair2",
+    "converter",
+    "ui",
+    "typescript",
+    "layaair2-cmd"
   ],
   "author": "Dean Yao <youmenomi@gmail.com>",
   "license": "MIT",
@@ -38,32 +41,35 @@
     "@rollup/plugin-commonjs": "^13.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.1.0",
+    "@types/async": "^3.2.3",
     "@types/fs-extra": "^9.0.1",
     "@types/jest": "^26.0.3",
     "@types/yargs": "^15.0.5",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.1.0",
-    "eslint": "^7.3.1",
+    "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
     "jest": "^26.1.0",
-    "np": "^6.2.5",
+    "layaair2-cmd": "^1.6.9",
+    "np": "^6.3.1",
     "prettier": "^2.0.5",
-    "rollup": "^2.18.1",
+    "rollup": "^2.21.0",
     "rollup-plugin-filesize": "^9.0.2",
     "rollup-plugin-terser": "^6.1.0",
     "ts-jest": "^26.1.1",
-    "typescript": "^3.9.5"
+    "typescript": "^3.9.6"
   },
   "dependencies": {
-    "@types/async": "^3.2.3",
     "async": "^3.2.0",
-    "chalk": "^3.0.0",
-    "cosmiconfig": "^6.0.0",
+    "chalk": "^4.1.0",
+    "execa": "^4.0.3",
     "fs-extra": "^9.0.1",
-    "listr2": "^2.1.9",
+    "listr2": "^2.2.0",
+    "read-pkg": "^5.2.0",
     "replace-string": "^3.1.0",
-    "ts-dedent": "^1.1.1",
-    "yargs": "^15.3.1"
+    "resolve-global": "^1.0.0",
+    "xml2js": "^0.4.23",
+    "yargs": "^15.4.0"
   }
 }

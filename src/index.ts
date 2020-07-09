@@ -1,95 +1,127 @@
 import path from 'path';
-import { cosmiconfig } from 'cosmiconfig';
 import yargs from 'yargs';
 import fs from 'fs-extra';
 import chalk from 'chalk';
 import replaceString from 'replace-string';
-import dedent from 'ts-dedent';
 import { eachOf } from 'async';
 import { Listr, ListrTask } from 'listr2';
+import execa from 'execa';
+import xml2js from 'xml2js';
+import readPkg from 'read-pkg';
+import resolveGlobal from 'resolve-global';
 import { name } from '../package.json';
 
 // eslint-disable-next-line no-console
 const Log = console.log;
 
-const { argv, showHelp } = yargs
+const GUARANTEE = ['1.6.9'];
+
+const { argv } = yargs
   // .alias('v', 'version')
   // .alias('h', 'help')
   .options({
-    file: {
-      alias: 'f',
+    workspace: {
+      alias: 'w',
       type: 'string',
-      describe: 'The path of the file to be converted.',
+      describe: 'Incoming workspace path.',
+      default: './',
     },
-    output: {
-      alias: 'o',
-      type: 'string',
-      describe: 'The path to place converted files.',
-    },
-    config: {
+    clear: {
       alias: 'c',
-      type: 'string',
-      describe: 'The path to the config file.',
-    },
-    noclean: {
       type: 'boolean',
-      describe: 'Avoid cleanup before output.',
+      describe: 'Clear will delete old ui code file.',
+      default: true,
+    },
+    skipUI: {
+      alias: 's',
+      type: 'boolean',
+      describe: 'Skip the step of Generating ui code files.',
       default: false,
     },
-    verbose: {
-      alias: 'v',
-      type: 'count',
-      describe: 'Logging Levels.',
+    globalLayaCmd: {
+      alias: 'g',
+      type: 'boolean',
+      describe: 'Use globally layaair2-cmd package.',
+      default: false,
     },
+    // verbose: {
+    //   alias: 'v',
+    //   type: 'count',
+    //   describe: 'Logging Levels.',
+    // },
   });
-
-const DEFAULT_CONFIG = {};
 
 (async () => {
   try {
-    let config: Partial<typeof argv> = { ...DEFAULT_CONFIG };
-    const explorer = cosmiconfig(name);
-    const result = await explorer.search();
-    if (result && !result.isEmpty) config = { ...config, ...result };
-    config = { ...config, ...argv };
-    if (!config.file) {
-      showHelp();
-      throw new Error(
-        'Please provide the file path to be converted. Config it or use the -f options.'
-      );
-    }
-    if (!config.output) {
-      config.output = path.dirname(config.file);
+    let globalLayaCmdPath: string;
+    if (argv.globalLayaCmd) {
+      const f = resolveGlobal.silent('layaair2-cmd');
+      if (f) await checkLayaCmd((globalLayaCmdPath = path.dirname(f)));
+      else
+        throw new Error(
+          'First install layaair2-cmd globally to use the -g option.'
+        );
+    } else {
+      try {
+        await checkLayaCmd('./node_modules/layaair2-cmd');
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          throw new Error(
+            'First install layaair2-cmd locally or use global layaair2-cmd with the -g option.'
+          );
+        } else {
+          throw error;
+        }
+      }
     }
 
+    let codeExportPath: string;
+    let output: string;
+    let file: string;
     let content: string;
     let modules: string[];
     let banner: string;
     const namespaces: string[] = [];
     const imports: string[] = [];
 
-    Log(
-      `💫 Converting ${chalk.bold.cyan(
-        `${config.file} → ${config.output}/...`
-      )}`
-    );
+    Log(`💫${name}`);
     const tasks = new Listr([
       subError({
-        title: 'Parsing',
+        title: 'Load workspace',
         task: async () => {
-          content = await fs.readFile(config.file, 'utf8');
-          modules = content.split('\nexport module ');
-          banner = modules
-            .shift()
-            .replace(
-              'import View = Laya.View;\nimport Dialog = Laya.Dialog;\nimport Scene = Laya.Scene;\n',
-              ''
-            );
+          const laya = await xml2js.parseStringPromise(
+            await fs.readFile(path.join(argv.workspace, 'laya/.laya'), 'utf8')
+          );
+          codeExportPath = String(laya.project.codeExportPath).trim();
+          output = path.join(argv.workspace, codeExportPath);
+          file = path.join(output, 'layaMaxUI.ts');
+        },
+      }),
+      subError({
+        title: 'Generate ui code files',
+        task: async () => {
+          const layaCmdArgs = ['ui', '-d', '-w', path.resolve(argv.workspace)];
+          if (argv.clear) layaCmdArgs.push('-c');
+          await execa.node(
+            globalLayaCmdPath
+              ? `${globalLayaCmdPath}/layaair2-cmd.js`
+              : './node_modules/layaair2-cmd/layaair2-cmd.js',
+            layaCmdArgs
+          );
+        },
+        skip: () => argv.skipUI,
+      }),
+      subError({
+        title: 'Parsing & Converting',
+        task: async () => {
+          content = await fs.readFile(file, 'utf8');
+          modules = content.split('export module');
+          banner = modules.shift();
 
           modules.forEach((module, i) => {
-            const start = module.indexOf(' {\n');
+            const start = module.indexOf('{');
             const end = module.lastIndexOf('}');
-            namespaces.push(module.substring(0, start));
+            namespaces.push(module.substring(0, start).trim());
             modules[i] = module.substring(start + 2, end);
           });
 
@@ -97,7 +129,7 @@ const DEFAULT_CONFIG = {};
             let im = '';
             const currNs = namespaces[i];
             namespaces.forEach((ns) => {
-              const search = `: ${ns}.`;
+              const search = `:${ns}.`;
               if (currNs !== ns && module.includes(search)) {
                 const names = [];
                 let start = module.indexOf(search);
@@ -114,7 +146,7 @@ const DEFAULT_CONFIG = {};
                   ns2path(ns)
                 )}';\n`;
               }
-              module = replaceString(module, search, ': ');
+              module = replaceString(module, search, ':');
             });
 
             modules[i] = module;
@@ -123,24 +155,21 @@ const DEFAULT_CONFIG = {};
         },
       }),
       subError({
-        title: 'Cleanup',
+        title: 'Output',
         task: async () => {
-          await fs.remove(
-            path.join(config.output, namespaces[0].split('.')[0])
-          );
-        },
-        skip: () => config.noclean,
-      }),
-      subError({
-        title: 'output',
-        task: async () => {
+          const del = codeExportPath.split('/').splice(1).join('.');
           await eachOf(modules, async (_module, i, cb) => {
             await fs.outputFile(
-              path.join(config.output, ...namespaces[i].split('.'), 'index.ts'),
-              dedent(imports[i] + banner + modules[i])
+              path.join(
+                output,
+                ...namespaces[i].replace(del, '').split('.'),
+                'index.ts'
+              ),
+              imports[i] + banner + modules[i]
             );
             if (cb) cb();
           });
+          await fs.remove(file);
         },
       }),
     ]);
@@ -152,13 +181,31 @@ const DEFAULT_CONFIG = {};
   }
 })();
 
+async function checkLayaCmd(path: string) {
+  const layaCmdPkg = await readPkg({
+    cwd: path,
+  });
+  if (!GUARANTEE.includes(layaCmdPkg.version)) {
+    Log(
+      chalk.yellow(
+        `Warn: layaair2-cmd@${
+          layaCmdPkg.version
+        } is not guaranteed to work. The guaranteed versions ${
+          GUARANTEE.length > 1 ? 'are' : 'is'
+        } ${GUARANTEE.join(', ')} .`
+      )
+    );
+  }
+}
+
 function ns2path(ns: string) {
   return replaceString(ns, '.', '/');
 }
 
 function subError(listrTask: ListrTask) {
   return {
-    title: listrTask.title,
-    task: (_ctx, task): Listr => task.newListr([listrTask]),
+    ...listrTask,
+    task: (_ctx, task): Listr =>
+      task.newListr([{ ...listrTask, title: 'In progress' }]),
   } as ListrTask;
 }

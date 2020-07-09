@@ -21,14 +21,16 @@ const build = (input, output, withMin = false) => {
     input,
     external: [
       'yargs',
-      'cosmiconfig',
       'fs-extra',
       'chalk',
       'path',
-      'ts-dedent',
       'replace-string',
       'async',
       'listr2',
+      'execa',
+      'xml2js',
+      'resolve-global',
+      'read-pkg',
     ],
     plugins: [
       json(),
