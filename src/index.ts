@@ -125,6 +125,7 @@ const { argv } = yargs
             modules[i] = module.substring(start + 2, end);
           });
 
+          const p = 'public ';
           modules.forEach((module, i) => {
             let im = '';
             const currNs = namespaces[i];
@@ -148,6 +149,20 @@ const { argv } = yargs
               }
               module = replaceString(module, search, ':');
             });
+
+            let a: number = module.lastIndexOf(p);
+            let b: number;
+            let c: number;
+            let v: string;
+            while (a > -1) {
+              b = module.indexOf(':', a);
+              c = module.indexOf(';', a);
+              v = module.slice(a + p.length, b);
+              module = module.slice(0, c) + '=this.' + v + module.slice(c);
+
+              if (a === 0) a = -1;
+              else a = module.lastIndexOf(p, a - 1);
+            }
 
             modules[i] = module;
             imports[i] = im;

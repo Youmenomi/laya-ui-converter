@@ -28,7 +28,8 @@
     "link": "npm link && npm link laya-ui-converter",
     "unlink": "npm unlink laya-ui-converter && npm unlink",
     "debug": "node --nolazy --inspect-brk=9229 bin/cli.js",
-    "np": "np --yolo"
+    "np": "np --yolo",
+    "start": "node bin/cli.js -w .test/test-laya"
   },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.10.4",
